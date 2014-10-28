@@ -16,6 +16,7 @@ library
   ghc-options:       -Wall -O2 -threaded -fllvm -fno-warn-unused-do-bind
   exposed-modules:     Spork.Config
                      , Spork.Database
+                     , Spork.DatabaseConfig
   ghc-options:         -Wall -O2
   build-depends:       base
                      , aeson
