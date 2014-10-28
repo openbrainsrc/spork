@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 
 module Spork.Config
-  ( readConfig
+  ( readConfig,
+    dbFromArgs
   ) where
 
 import           Control.Applicative
@@ -13,8 +14,12 @@ import qualified Data.Text as T
 
 import           System.Exit
 import           System.IO
+import           System.Environment
 
 import           Database.PostgreSQL.Simple
+
+import           Spork.Database
+import           Spork.DatabaseConfig
 
 readConfig :: FromJSON a => FilePath -> IO a
 readConfig path = do
@@ -25,4 +30,10 @@ readConfig path = do
       hPutStrLn stderr $ "Can't read the config file: " ++ err
       exitFailure
 
---dbFromArgs :: ([String]-> DB ()) -> IO
+dbFromArgs :: FromJSON conf => ([String]-> DB conf ()) -> IO ()
+dbFromArgs f = do
+  (confnm:args) <- getArgs
+  OnlyDatabaseConfig dbconf <- readConfig confnm
+  conn <- createConn dbconf
+  allconf <- readConfig confnm
+  runDB_io conn allconf $ f args

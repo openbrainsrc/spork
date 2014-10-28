@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables, DeriveGeneric, GeneralizedNewtypeDeriving #-}
 
 module Spork.DatabaseConfig
-  ( DatabaseConfig,
-    OnlyDatabaseConfig,
+  ( DatabaseConfig(..),
+    OnlyDatabaseConfig(..),
     createConn,
     destroyConn
   ) where
