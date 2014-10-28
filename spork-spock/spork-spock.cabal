@@ -1,0 +1,23 @@
+name:                spork-spock
+version:             0.1.0.0
+synopsis:            Helper functions for libraries for web applications based on Spock
+homepage:            https://github.com/openbrainsrc/spork
+license:             BSD3
+license-file:        LICENSE
+author:              Tom Nielsen
+maintainer:          tomn@openbrain.org
+build-type:          Simple
+cabal-version:       >=1.8
+
+
+library
+  ghc-options:       -Wall -O2 -threaded -fno-warn-unused-do-bind
+  exposed-modules:     Spork.Spock
+  ghc-options:         -Wall -O2
+  build-depends:       base
+                     , aeson
+                     , directory
+                     , filepath
+                     , Spock
+                     , spork-lib
+                     , postgresql-simple
