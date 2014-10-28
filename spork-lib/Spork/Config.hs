@@ -30,7 +30,7 @@ readConfig path = do
       hPutStrLn stderr $ "Can't read the config file: " ++ err
       exitFailure
 
-dbFromArgs :: FromJSON conf => ([String]-> DB conf ()) -> IO ()
+dbFromArgs :: FromJSON conf => ([String]-> DBC conf ()) -> IO ()
 dbFromArgs f = do
   (confnm:args) <- getArgs
   OnlyDatabaseConfig dbconf <- readConfig confnm

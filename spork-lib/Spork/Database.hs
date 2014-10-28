@@ -4,7 +4,7 @@ module Spork.Database
   ( readField,
     mReadField,
     mBinaryField,
-    DB,
+    DBC,
     withConn,
     Connection,
     executeDB, executeManyDB, executeDB_,
@@ -43,36 +43,36 @@ import Control.Monad.Reader
 import Control.Monad (void)
 import qualified Data.Binary as B
 
-newtype DB conf a = DB { unDB :: ReaderT (Connection, conf) IO a }
+newtype DBC conf a = DB { unDB :: ReaderT (Connection, conf) IO a }
   deriving (Monad, Functor, MonadIO)
 
-db_ask :: DB conf (Connection, conf)
+db_ask :: DBC conf (Connection, conf)
 db_ask = DB ask
 
-withConn :: (Connection -> IO a) -> DB conf a
+withConn :: (Connection -> IO a) -> DBC conf a
 withConn mx = db_ask >>= \(conn,_) -> DB (lift $ mx conn)
 
-executeDB :: ToRow q => Query -> q -> DB conf ()
+executeDB :: ToRow q => Query -> q -> DBC conf ()
 executeDB qry args = void $ withConn $ \conn -> execute conn qry args
 
-executeManyDB :: ToRow q => Query -> [q] -> DB conf ()
+executeManyDB :: ToRow q => Query -> [q] -> DBC conf ()
 executeManyDB qry args = void $ withConn $ \conn -> executeMany conn qry args
 
-queryDB :: (ToRow q, FromRow r) => Query -> q -> DB conf [r]
+queryDB :: (ToRow q, FromRow r) => Query -> q -> DBC conf [r]
 queryDB qry args = withConn $ \conn -> query conn qry args
 
-executeDB_ :: Query -> DB conf ()
+executeDB_ :: Query -> DBC conf ()
 executeDB_ qry = void $ withConn $ \conn -> execute_ conn qry
 
-queryDB_ :: FromRow r => Query -> DB conf [r]
+queryDB_ :: FromRow r => Query -> DBC conf [r]
 queryDB_ qry = withConn $ \conn -> query_ conn qry
 
 foldDB_ :: FromRow r =>
-           Query -> a -> (a -> r -> IO a) -> DB conf a
+           Query -> a -> (a -> r -> IO a) -> DBC conf a
 foldDB_ qry seed f = withConn $ \conn -> fold_ conn qry seed f
 
 foldDB ::  (ToRow params, FromRow row) =>
-           Query -> params -> a -> (a -> row -> IO a) -> DB conf a
+           Query -> params -> a -> (a -> row -> IO a) -> DBC conf a
 foldDB qry pars seed f = withConn $ \conn -> fold conn qry pars seed f
 
 console :: (MonadIO m, Show a) => String -> a -> m ()
@@ -83,7 +83,7 @@ consoles msg xs = liftIO $ do
   putStrLn $ msg++": "
   mapM_ (putStrLn . ("  "++) . show) xs
 
-runDB_io :: Connection -> conf -> DB conf a -> IO a
+runDB_io :: Connection -> conf -> DBC conf a -> IO a
 runDB_io conn conf mx = runReaderT (unDB mx) (conn, conf)
 
 unOnly :: Only a -> a
