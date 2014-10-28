@@ -13,6 +13,7 @@ cabal-version:       >=1.8
 library
   ghc-options:       -Wall -O2 -threaded -fno-warn-unused-do-bind
   exposed-modules:     Spork.Spock
+                     , Spork.Middleware
   ghc-options:         -Wall -O2
   build-depends:       base
                      , aeson
@@ -21,3 +22,8 @@ library
                      , Spock
                      , spork-lib
                      , postgresql-simple
+                     , mtl
+                     , wai-middleware-static
+                     , wai-extra
+                     , wai
+                     , http-types
