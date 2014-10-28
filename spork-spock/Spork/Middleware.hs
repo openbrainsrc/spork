@@ -3,6 +3,8 @@
 module Spork.Middleware ( corsMiddleware
   , setCorsHeaders
   , staticMiddleware
+  , corsMiddleware
+  , Network.Wai.Middleware.RequestLogger.logStdout
   ) where
 
 import Data.String
@@ -13,8 +15,10 @@ import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status
 import Network.Wai
 import Network.Wai.Middleware.Static
+import qualified Network.Wai.Middleware.RequestLogger
 
 import Web.Spock
+
 
 staticMiddleware :: [FilePath] -> Middleware
 staticMiddleware dirs =
