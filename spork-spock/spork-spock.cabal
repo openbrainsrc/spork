@@ -21,3 +21,4 @@ library
                      , Spock
                      , spork-lib
                      , postgresql-simple
+                     , mtl

@@ -4,7 +4,7 @@ module Spork.Database
   ( readField,
     mReadField,
     mBinaryField,
-    DBC,
+    DBC(..),
     getConf,
     getConn,
     withConn,
@@ -13,7 +13,7 @@ module Spork.Database
     queryDB, queryDB_,
     foldDB,
     foldDB_,
-    unDB,
+    unDBC,
     runDB_io,
     db_ask,
     console,
@@ -44,20 +44,20 @@ import           GHC.Generics
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromRow
 
-newtype DBC conf a = DB { unDB :: ReaderT (Connection, conf) IO a }
+newtype DBC conf a = DBC { unDBC :: ReaderT (Connection, conf) IO a }
   deriving (Monad, Functor, MonadIO)
 
 db_ask :: DBC conf (Connection, conf)
-db_ask = DB ask
+db_ask = DBC ask
 
 getConf :: DBC conf conf
-getConf = DB $ snd <$> ask
+getConf = DBC $ snd <$> ask
 
 getConn :: DBC conf Connection
-getConn = DB $ fst <$> ask
+getConn = DBC $ fst <$> ask
 
 withConn :: (Connection -> IO a) -> DBC conf a
-withConn mx = getConn >>= DB . lift . mx
+withConn mx = getConn >>= DBC . lift . mx
 
 executeDB :: ToRow q => Query -> q -> DBC conf ()
 executeDB qry args = void $ withConn $ \conn -> execute conn qry args
@@ -91,7 +91,7 @@ consoles msg xs = liftIO $ do
   mapM_ (putStrLn . ("  "++) . show) xs
 
 runDB_io :: Connection -> conf -> DBC conf a -> IO a
-runDB_io conn conf mx = runReaderT (unDB mx) (conn, conf)
+runDB_io conn conf mx = runReaderT (unDBC mx) (conn, conf)
 
 unOnly :: Only a -> a
 unOnly (Only x) = x
