@@ -5,7 +5,6 @@ module Spork.Config
   ) where
 
 import           Control.Applicative
-import           Control.Exception
 import           Control.Monad
 
 import           Data.Aeson
@@ -14,8 +13,6 @@ import qualified Data.Text as T
 
 import           System.Exit
 import           System.IO
-
-import           GHC.Conc
 
 import           Database.PostgreSQL.Simple
 
