@@ -1,15 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Spork.Middleware ( corsMiddleware
+module Spork.Middleware (
+  corsMiddleware
   , setCorsHeaders
   , staticMiddleware
-  , corsMiddleware
   , Network.Wai.Middleware.RequestLogger.logStdout
   ) where
 
 import Data.String
-
-import System.FilePath
 
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status
