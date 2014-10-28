@@ -5,6 +5,8 @@ module Spork.Database
     mReadField,
     mBinaryField,
     DBC,
+    getConf,
+    getConn,
     withConn,
     Connection,
     executeDB, executeManyDB, executeDB_,
@@ -25,8 +27,11 @@ module Spork.Database
 import           Control.Applicative
 import           Control.Exception
 import           Control.Monad
+import           Control.Monad (void)
+import           Control.Monad.Reader
 
 import           Data.Aeson
+import qualified Data.Binary as B
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.Text as T
 
@@ -34,14 +39,10 @@ import           System.Exit
 import           System.IO
 
 import           GHC.Conc
-import GHC.Generics
+import           GHC.Generics
 
-import Database.PostgreSQL.Simple
-import Database.PostgreSQL.Simple.FromRow
-
-import Control.Monad.Reader
-import Control.Monad (void)
-import qualified Data.Binary as B
+import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple.FromRow
 
 newtype DBC conf a = DB { unDB :: ReaderT (Connection, conf) IO a }
   deriving (Monad, Functor, MonadIO)
@@ -49,8 +50,14 @@ newtype DBC conf a = DB { unDB :: ReaderT (Connection, conf) IO a }
 db_ask :: DBC conf (Connection, conf)
 db_ask = DB ask
 
+getConf :: DBC conf conf
+getConf = DB $ snd <$> ask
+
+getConn :: DBC conf Connection
+getConn = DB $ fst <$> ask
+
 withConn :: (Connection -> IO a) -> DBC conf a
-withConn mx = db_ask >>= \(conn,_) -> DB (lift $ mx conn)
+withConn mx = getConn >>= DB . lift . mx
 
 executeDB :: ToRow q => Query -> q -> DBC conf ()
 executeDB qry args = void $ withConn $ \conn -> execute conn qry args
