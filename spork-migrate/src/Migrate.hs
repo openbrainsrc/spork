@@ -60,8 +60,8 @@ createMigrationFile :: String -> DBC OnlyDatabaseConfig ()
 createMigrationFile name = do
   OnlyDatabaseConfig conf <- getConf
   let migrationsDir = maybe "migrations" id $ migrations_directory conf
-  now <- liftIO $ getCurrentTime
-  let prefix = formatTime defaultTimeLocale "%Y%m%d%H%M%S" now
-      name   = prefix ++ "_" ++ name <.> "sql"
-      path   = migrationsDir </> name
-  liftIO $ writeFile path "-- Enter the SQL queries to execute here."
+  now <- liftIO getCurrentTime
+  let prefix   = formatTime defaultTimeLocale "%Y%m%d%H%M%S" now
+      fullname = prefix ++ "_" ++ name <.> "sql"
+      path     = migrationsDir </> fullname
+  liftIO $ writeFile path "-- Enter the SQL queries to execute here.\n"
