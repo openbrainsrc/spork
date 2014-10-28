@@ -13,7 +13,6 @@ module Spork.Database
     queryDB, queryDB_,
     foldDB,
     foldDB_,
-    unDBC,
     runDB_io,
     db_ask,
     console,
@@ -25,21 +24,10 @@ module Spork.Database
   ) where
 
 import           Control.Applicative
-import           Control.Exception
 import           Control.Monad
-import           Control.Monad (void)
 import           Control.Monad.Reader
 
-import           Data.Aeson
 import qualified Data.Binary as B
-import qualified Data.ByteString.Lazy.Char8 as BSL
-import qualified Data.Text as T
-
-import           System.Exit
-import           System.IO
-
-import           GHC.Conc
-import           GHC.Generics
 
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.FromRow
