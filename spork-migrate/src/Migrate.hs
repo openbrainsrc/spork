@@ -11,7 +11,6 @@ import System.Environment
 import System.Exit
 import System.FilePath
 import System.IO
-import System.Locale
 
 import Spork.Config
 import Spork.Database
