@@ -51,7 +51,8 @@ runMigrations = do
 getAlreadyMigratedNames :: DBC conf [String]
 getAlreadyMigratedNames = do
   _ <- executeDB_ $ fromString $ "CREATE TABLE IF NOT EXISTS migrations ("
-                                 ++ " name varchar(12) PRIMARY KEY )"
+                                 ++ " name varchar(14) PRIMARY KEY"
+                                 ++ " CHECK(name <> '') )"
 
   rows <- queryDB_ "SELECT name FROM migrations"
   return $ map head rows
