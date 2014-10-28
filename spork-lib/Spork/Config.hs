@@ -5,18 +5,12 @@ module Spork.Config
     dbFromArgs
   ) where
 
-import           Control.Applicative
-import           Control.Monad
-
 import           Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BSL
-import qualified Data.Text as T
 
 import           System.Exit
 import           System.IO
 import           System.Environment
-
-import           Database.PostgreSQL.Simple
 
 import           Spork.Database
 import           Spork.DatabaseConfig
