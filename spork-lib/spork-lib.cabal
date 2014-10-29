@@ -23,6 +23,7 @@ library
                      , directory
                      , filepath
                      , postgresql-simple
+                     , postgresql-simple-sop >= 0.1.0.1
                      , mtl
                      , text
                      , containers

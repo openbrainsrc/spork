@@ -20,7 +20,9 @@ module Spork.Database
     liftIO,
     unOnly,
     close,
-    Only (..)
+    Only (..),
+    gselectFromDB,
+    ginsertIntoDB
   ) where
 
 import           Control.Applicative
@@ -30,6 +32,7 @@ import           Control.Monad.Reader
 import qualified Data.Binary as B
 
 import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple.SOP
 import           Database.PostgreSQL.Simple.FromRow
 
 newtype DBC conf a = DBC { unDBC :: ReaderT (Connection, conf) IO a }
@@ -106,3 +109,7 @@ mBinaryField = do
     Just bs -> case B.decodeOrFail bs of
                  Left _ -> return Nothing
                  Right (_,_,x) -> return $ Just x
+
+gselectFromDB qry pars = withConn $ \conn -> gselectFrom conn qry pars
+
+ginsertIntoDB tbl val = withConn $ \conn -> ginsertInto conn tbl val
