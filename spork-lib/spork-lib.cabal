@@ -17,6 +17,7 @@ library
   exposed-modules:     Spork.Config
                      , Spork.Database
                      , Spork.DatabaseConfig
+                     , Spork.Generics
   ghc-options:         -Wall -O2
   build-depends:       base
                      , aeson
@@ -33,3 +34,4 @@ library
                      , unordered-containers
                      , binary >= 0.7
                      , bytestring
+                     , syb
