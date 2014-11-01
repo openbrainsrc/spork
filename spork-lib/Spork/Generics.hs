@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables, DeriveDataTypeable #-}
 
-module Spork.Generics where
+module Spork.Generics (is) where
 
 import Data.Data
 
-data PhpValue = VoidValue | IntValue Integer | BoolValue Bool 
-              deriving (Typeable, Data)
+--data PhpValue = VoidValue | IntValue Integer | BoolValue Bool 
+--              deriving (Typeable, Data)
 
 
 is :: Data a => a-> String -> Bool

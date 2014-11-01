@@ -18,6 +18,7 @@ library
                      , Spork.Database
                      , Spork.DatabaseConfig
                      , Spork.Generics
+                     , Spork.Time
   ghc-options:         -Wall -O2
   build-depends:       base
                      , aeson
