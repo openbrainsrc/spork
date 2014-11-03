@@ -7,6 +7,7 @@ module Spork.Middleware (
   , Network.Wai.Middleware.RequestLogger.logStdout
   ) where
 
+import Data.Monoid
 import Data.String
 
 import Network.HTTP.Types.Method
@@ -18,15 +19,16 @@ import qualified Network.Wai.Middleware.RequestLogger
 import Web.Spock
 
 
-staticMiddleware :: [FilePath] -> Middleware
-staticMiddleware dirs =
+staticMiddleware :: Maybe Policy -> [FilePath] -> Middleware
+staticMiddleware mPolicy dirs =
     let middlewares = concatMap mkMiddlewares dirs
     in foldr (.) id middlewares
   where
     mkMiddlewares :: FilePath -> [Middleware]
     mkMiddlewares dir =
-      let --indexMiddleware     = staticPolicy $ only [("", dir </> "index.html")]
-          otherFileMiddleware = staticPolicy $ noDots >-> isNotAbsolute >-> addBase dir
+      let policy = maybe mempty id mPolicy
+          --indexMiddleware     = staticPolicy $ only [("", dir </> "index.html")]
+          otherFileMiddleware = staticPolicy $ policy >-> noDots >-> isNotAbsolute >-> addBase dir
       in [otherFileMiddleware]
 
 type URL = String
