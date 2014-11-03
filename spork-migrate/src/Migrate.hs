@@ -66,3 +66,4 @@ createMigrationFile name = do
       fullname = prefix ++ "_" ++ name <.> "sql"
       path     = migrationsDir </> fullname
   liftIO $ writeFile path "-- Enter the SQL queries to execute here.\n"
+  liftIO $ putStrLn path
