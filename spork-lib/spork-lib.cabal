@@ -19,6 +19,7 @@ library
                      , Spork.DatabaseConfig
                      , Spork.Generics
                      , Spork.Time
+                     , Spork.Parallel
   ghc-options:         -Wall -O2
   build-depends:       base
                      , aeson
@@ -36,3 +37,4 @@ library
                      , binary >= 0.7
                      , bytestring
                      , syb
+                     , stm
