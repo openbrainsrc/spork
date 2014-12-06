@@ -14,12 +14,31 @@ import           Spork.DatabaseConfig
 
 import Control.Concurrent.STM.TChan
 import Control.Concurrent.STM
+import Control.Concurrent
+import Control.Concurrent.MVar
 
-parMapM_ :: Int -> (a-> DBC conf b) -> [a] -> DBC conf [b]
+parMapM_ :: Int -> (a-> DBC conf ()) -> [a] -> DBC conf ()
 parMapM_ nthreads f xs = do
   chan <- liftIO $ newTChanIO
-  liftIO $ atomically $ writeTChan chan xs
+  liftIO $ atomically $ mapM_ (writeTChan chan) xs
   (conn, conf) <- db_ask
-  let worker = runDB_io conn conf $ do
-       return ()
-  return []
+  locks <- liftIO $ sequence $ replicate nthreads newEmptyMVar
+  let worker lock = runDB_io conn conf $ do
+        let doWork = do
+              mval <- mReadTChan chan
+              case mval of
+                Nothing -> return ()
+                Just x -> do () <- f x
+                             doWork
+        doWork
+        liftIO $ putMVar lock ()
+
+  liftIO $ mapM_ (forkIO . worker) locks
+  liftIO $ mapM_ takeMVar locks
+
+mReadTChan :: TChan a -> DBC conf (Maybe a)
+mReadTChan chan = liftIO $ atomically $ do
+  isEmpty <- isEmptyTChan chan
+  if isEmpty
+     then return Nothing
+     else fmap Just $ readTChan chan

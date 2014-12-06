@@ -17,7 +17,7 @@ executable spork-migrate
   main-is:             Migrate.hs
   hs-source-dirs:      src
   default-language:    Haskell2010
-  build-depends:       base >=4.6 && <4.7
+  build-depends:       base >=4.6 && <5
                      , spork-lib
                      , postgresql-simple
                      , filepath ==1.3.*
