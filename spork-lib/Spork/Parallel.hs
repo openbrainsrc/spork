@@ -16,6 +16,8 @@ import Control.Concurrent.STM.TChan
 import Control.Concurrent.STM
 import Control.Concurrent
 import Control.Exception
+import Control.Applicative
+import Control.Monad
 import Control.Concurrent.MVar
 
 parMapM_ :: Int -> (a-> DBC conf ()) -> [a] -> DBC conf ()
@@ -38,6 +40,28 @@ parMapM_ nthreads f xs = do
 
     mapM_ (forkIO . worker) locks
     mapM_ takeMVar locks
+
+parMapM :: Int -> (a-> DBC conf b) -> [a] -> DBC conf [b]
+parMapM nthreads f xs = do
+  (conn, conf) <- db_ask
+  liftIO $ do
+    chan <-  newTChanIO
+    mvxs <- mapM (\x -> (,) <$> newEmptyMVar <*> return x) xs
+    atomically $ forM_ mvxs $ \(mv,x) -> do
+      writeTChan chan (mv,x)
+    let worker =  do
+          let doWork = do
+                mmvx <- atomically $ mReadTChan chan
+                case mmvx of
+                  Nothing -> return ()
+                  Just (mv,x) -> do y <- catch (runDB_io conn conf $ f x)
+                                           (\e-> error $ show (e::SomeException))
+                                    putMVar mv y
+                                    doWork
+          doWork
+    mapM_ (\_-> forkIO worker) [1..nthreads]
+    mapM (takeMVar . fst) mvxs
+
 
 mReadTChan :: TChan a -> STM (Maybe a)
 mReadTChan chan = do
