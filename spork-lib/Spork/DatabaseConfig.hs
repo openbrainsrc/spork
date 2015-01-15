@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, DeriveGeneric, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, DeriveGeneric, GeneralizedNewtypeDeriving, DeriveDataTypeable #-}
 
 module Spork.DatabaseConfig
   ( DatabaseConfig(..),
@@ -13,6 +13,7 @@ import           Data.Aeson
 
 import           GHC.Conc
 import           GHC.Generics
+import Data.Generics (Typeable, Data)
 
 import           Database.PostgreSQL.Simple
 
@@ -25,7 +26,7 @@ data DatabaseConfig = DatabaseConfig
   , port                   :: Integer
   , dbname                 :: String
   , migrations_directory   :: Maybe String
-  } deriving (Show, Eq, Generic)
+  } deriving (Show, Eq, Generic, Data,Typeable)
 
 instance FromJSON DatabaseConfig
 instance FromJSON OnlyDatabaseConfig
