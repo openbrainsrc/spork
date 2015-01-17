@@ -30,6 +30,7 @@ import           Control.Monad
 import           Control.Monad.Reader
 
 import qualified Data.Binary as B
+import Control.Exception
 
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SOP
@@ -83,6 +84,12 @@ consoles msg xs = liftIO $ do
 
 runDB_io :: Connection -> conf -> DBC conf a -> IO a
 runDB_io conn conf mx = runReaderT (unDBC mx) (conn, conf)
+
+catchDB :: DBC conf a -> DBC conf (Either String a)
+catchDB f = do
+  (conn, conf) <- db_ask
+  liftIO $ catch (fmap Right $ runDB_io conn conf f)
+                 (\e-> return $ Left $ show (e::SomeException))
 
 unOnly :: Only a -> a
 unOnly (Only x) = x
