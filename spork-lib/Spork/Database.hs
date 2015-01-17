@@ -22,7 +22,8 @@ module Spork.Database
     close,
     Only (..),
     gselectFromDB,
-    ginsertIntoDB
+    ginsertIntoDB,
+    catchDB
   ) where
 
 import           Control.Applicative
