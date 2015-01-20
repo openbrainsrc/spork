@@ -29,6 +29,7 @@ module Spork.Database
 import           Control.Applicative
 import           Control.Monad
 import           Control.Monad.Reader
+import           System.IO
 
 import qualified Data.Binary as B
 import Control.Exception
@@ -76,12 +77,15 @@ foldDB ::  (ToRow params, FromRow row) =>
 foldDB qry pars seed f = withConn $ \conn -> fold conn qry pars seed f
 
 console :: (MonadIO m, Show a) => String -> a -> m ()
-console msg x = liftIO $ putStrLn $ msg++": "++show x
+console msg x = liftIO $ do
+  putStrLn $ msg++": "++show x
+  hFlush stdout
 
 consoles :: (MonadIO m, Show a) => String -> [a] -> m ()
 consoles msg xs = liftIO $ do
   putStrLn $ msg++": "
   mapM_ (putStrLn . ("  "++) . show) xs
+  hFlush stdout
 
 runDB_io :: Connection -> conf -> DBC conf a -> IO a
 runDB_io conn conf mx = runReaderT (unDBC mx) (conn, conf)
