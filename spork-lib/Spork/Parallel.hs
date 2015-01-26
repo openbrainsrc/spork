@@ -20,6 +20,8 @@ import Control.Applicative
 import Control.Monad
 import Control.Concurrent.MVar
 
+import Control.Concurrent.STM.TBQueue
+
 parMapM_ :: Int -> (a-> DBC conf ()) -> [a] -> DBC conf ()
 parMapM_ nthreads f xs = do
   (conn, conf) <- db_ask
@@ -69,3 +71,23 @@ mReadTChan chan = do
   if isEmpty
      then return Nothing
      else fmap Just $ readTChan chan
+
+-- intended for postgresql-simple's fold
+boundedWorker :: Int -> (a -> DBC c ()) -> DBC c (a -> DBC c (), DBC c ())
+boundedWorker nthreads f = do
+  (conn, conf) <- db_ask
+  liftIO $ do
+    q <- newTBQueueIO nthreads
+    let worker = do
+          let doWork = do
+                mx <- atomically $ readTBQueue q
+                case mx of
+                  Nothing -> return ()
+                  Just x -> do () <- catch (runDB_io conn conf $ f x)
+                                           (\e-> print (e::SomeException))
+                               doWork
+          doWork
+    mapM_ (\_-> forkIO worker) [1..nthreads]
+    let process x = liftIO $ atomically $ writeTBQueue q $ Just x
+        kill = liftIO $ atomically $ mapM_ (\_-> writeTBQueue q $ Nothing) [1..nthreads]
+    return (process, kill)
