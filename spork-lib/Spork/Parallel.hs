@@ -12,6 +12,7 @@ import           System.Environment
 import           Spork.Database
 import           Spork.DatabaseConfig
 
+import Data.IORef
 import Control.Concurrent.STM.TChan
 import Control.Concurrent.STM
 import Control.Concurrent
@@ -78,6 +79,7 @@ boundedWorker nthreads f = do
   (conn, conf) <- db_ask
   liftIO $ do
     q <- newTBQueueIO nthreads
+    counter <- newIORef 0
     let worker = do
           let doWork = do
                 mx <- atomically $ readTBQueue q
@@ -88,6 +90,12 @@ boundedWorker nthreads f = do
                                doWork
           doWork
     mapM_ (\_-> forkIO worker) [1..nthreads]
-    let process x = liftIO $ atomically $ writeTBQueue q $ Just x
+    let process x = liftIO $ do
+           modifyIORef counter (+1)
+           counts <- readIORef counter
+           when (counts `mod` 100 == 0) $ do
+              putStr $ '.':show counts
+              hFlush stdout
+           liftIO $ atomically $ writeTBQueue q $ Just x
         kill = liftIO $ atomically $ mapM_ (\_-> writeTBQueue q $ Nothing) [1..nthreads]
     return (process, kill)
