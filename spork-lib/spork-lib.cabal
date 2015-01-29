@@ -19,6 +19,7 @@ library
                      , Spork.DatabaseConfig
                      , Spork.Generics
                      , Spork.Time
+                     , Spork.Tasks
                      , Spork.Parallel
   ghc-options:         -Wall -O2
   build-depends:       base
@@ -38,3 +39,4 @@ library
                      , bytestring
                      , syb
                      , stm
+                     , process
