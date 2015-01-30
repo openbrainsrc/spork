@@ -24,6 +24,7 @@ module Spork.Database
     Only (..),
     gselectFromDB,
     ginsertIntoDB,
+    ginsertManyIntoDB,
     catchDB
   ) where
 
@@ -129,3 +130,5 @@ mBinaryField = do
 gselectFromDB qry pars = withConn $ \conn -> gselectFrom conn qry pars
 
 ginsertIntoDB tbl val = withConn $ \conn -> ginsertInto conn tbl val
+
+ginsertManyIntoDB tbl val = withConn $ \conn -> ginsertManyInto conn tbl val
