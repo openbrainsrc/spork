@@ -13,6 +13,7 @@ import           Spork.Database
 import           Spork.DatabaseConfig
 
 import Data.IORef
+import Data.Maybe
 import Control.Concurrent.STM.TChan
 import Control.Concurrent.STM
 import Control.Concurrent
@@ -57,13 +58,14 @@ parMapM nthreads f xs = do
                 mmvx <- atomically $ mReadTChan chan
                 case mmvx of
                   Nothing -> return ()
-                  Just (mv,x) -> do y <- catch (runDB_io conn conf $ f x)
-                                           (\e-> error $ show (e::SomeException))
-                                    putMVar mv y
+                  Just (mv,x) -> do catch (do y <- runDB_io conn conf $ f x
+                                              putMVar mv $ Just y )
+                                           (\e-> do hPutStrLn stdout $ show (e::SomeException)
+                                                    putMVar mv Nothing)
                                     doWork
           doWork
     mapM_ (\_-> forkIO worker) [1..nthreads]
-    mapM (takeMVar . fst) mvxs
+    fmap catMaybes $ mapM (takeMVar . fst) mvxs
 
 
 mReadTChan :: TChan a -> STM (Maybe a)

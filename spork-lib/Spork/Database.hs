@@ -17,6 +17,7 @@ module Spork.Database
     db_ask,
     console,
     consoles,
+    conschar,
     liftIO,
     unOnly,
     close,
@@ -86,6 +87,9 @@ consoles msg xs = liftIO $ do
   putStrLn $ msg++": "
   mapM_ (putStrLn . ("  "++) . show) xs
   hFlush stdout
+
+conschar :: MonadIO m => Char -> m ()
+conschar c = liftIO $ putChar c >> hFlush stdout
 
 runDB_io :: Connection -> conf -> DBC conf a -> IO a
 runDB_io conn conf mx = runReaderT (unDBC mx) (conn, conf)
