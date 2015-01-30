@@ -13,6 +13,7 @@ module Spork.Database
     queryDB, queryDB_,
     foldDB,
     foldDB_,
+    gfoldDB,
     runDB_io,
     db_ask,
     console,
@@ -35,10 +36,15 @@ import           System.IO
 
 import qualified Data.Binary as B
 import Control.Exception
+import Data.Monoid ((<>))
+import           Generics.SOP
+import Data.List (intercalate)
+import Data.String (fromString)
 
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SOP
 import           Database.PostgreSQL.Simple.FromRow
+import Database.PostgreSQL.Simple.Transaction
 
 newtype DBC conf a = DBC { unDBC :: ReaderT (Connection, conf) IO a }
   deriving (Monad, Functor, MonadIO)
@@ -79,7 +85,7 @@ foldDB ::  (ToRow params, FromRow row) =>
 foldDB qry pars seed f = withConn $ \conn -> fold conn qry pars seed f
 
 
-gfoldDB :: forall a r q. (ToRow q, FromRow r, Generic r, HasFieldNames r) => Query -> q -> a -> (a -> r -> DB a) -> DB a
+gfoldDB :: forall a r q c. (ToRow q, FromRow r, Generic r, HasFieldNames r) => Query -> q -> a -> (a -> r -> DBC c a) -> DBC c a
 gfoldDB q1 args seed f = do
   (conn, conf) <- db_ask
   let fullq = "select " <> (fromString $ intercalate "," $ fieldNames $ (Proxy :: Proxy r) ) <> " from " <> q1
