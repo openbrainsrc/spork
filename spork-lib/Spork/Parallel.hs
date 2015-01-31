@@ -23,6 +23,7 @@ import Control.Monad
 import Control.Concurrent.MVar
 
 import Control.Concurrent.STM.TBQueue
+import qualified GHC.Conc as Conc
 
 parMapM_ :: Int -> (a-> DBC conf ()) -> [a] -> DBC conf ()
 parMapM_ nthreads f xs = do
@@ -101,3 +102,6 @@ boundedWorker nthreads f = do
            liftIO $ atomically $ writeTBQueue q $ Just x
         kill = liftIO $ atomically $ mapM_ (\_-> writeTBQueue q $ Nothing) [1..nthreads]
     return (process, kill)
+
+getCPUs :: DBC c Int
+getCPUs = liftIO Conc.getNumCapabilities
