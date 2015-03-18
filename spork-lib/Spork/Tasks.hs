@@ -19,11 +19,14 @@ import           Spork.DatabaseConfig
 
 taskRunner :: FromJSON c => [(String, [String] -> DBC c ())] -> IO ()
 taskRunner subcmds = do
-  (confnm:args) <- getArgs
-  OnlyDatabaseConfig dbconf <- readConfig confnm
-  conn <- createConn dbconf
-  allconf <- readConfig confnm
-  runDB_io conn allconf $ dispatch args dbconf subcmds
+  allargs <- getArgs
+  case allargs of
+    [] -> liftIO $ putStrLn "first argument should be a JSON config file"
+    (confnm:args) -> do
+      OnlyDatabaseConfig dbconf <- readConfig confnm
+      conn <- createConn dbconf
+      allconf <- readConfig confnm
+      runDB_io conn allconf $ dispatch args dbconf subcmds
 
 dispatch ("psql":rest) dbconf subcmds = do
   let cmd = "PGPASSWORD="++password dbconf ++" psql -U "++user dbconf ++" "++dbname dbconf
@@ -33,4 +36,11 @@ dispatch ("psql":rest) dbconf subcmds = do
 
 dispatch (subcmd:rest) dbconf subcmds = case lookup subcmd subcmds of
    Just f -> f rest
-   Nothing -> liftIO $ putStrLn $ "Avaliable commands: "++show (map fst subcmds)
+   Nothing -> help subcmds
+
+dispatch [] dbconf subcmds
+  = help subcmds 
+
+help subcmds = liftIO $ do
+  putStrLn $ "Avaliable commands: "
+  mapM_ (\(subcmd,_)-> putStrLn $ "  "++subcmd ) subcmds
