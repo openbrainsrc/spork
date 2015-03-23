@@ -9,7 +9,7 @@ toDayOfWeek tm =
   let (_,_,dow) = toWeekDate (utctDay tm)
       secs = round (utctDayTime tm) `mod` 60
       secFrac = realToFrac (secs::Int) / 60 
-  in realToFrac dow + secFrac * 0.36 - 0.18 
+  in realToFrac dow + secFrac * 0.70 - 0.35 
 
 toHour :: UTCTime -> Double
 toHour = (/3600) . realToFrac . utctDayTime 
