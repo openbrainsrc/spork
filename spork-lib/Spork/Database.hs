@@ -9,7 +9,7 @@ module Spork.Database
     getConn,
     withConn,
     Connection,
-    executeDB, executeManyDB, executeDB_,
+    executeDB, executeManyDB, executeDB_,executeDBres,
     queryDB, queryDB_,
     foldDB,
     foldDB_,
@@ -36,6 +36,7 @@ import           System.IO
 
 import qualified Data.Binary as B
 import Control.Exception
+import Control.Applicative
 import Data.Monoid ((<>))
 import           Generics.SOP
 import Data.List (intercalate)
@@ -47,7 +48,7 @@ import           Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.Transaction
 
 newtype DBC conf a = DBC { unDBC :: ReaderT (Connection, conf) IO a }
-  deriving (Monad, Functor, MonadIO)
+  deriving (Monad, Functor, MonadIO, Applicative)
 
 db_ask :: DBC conf (Connection, conf)
 db_ask = DBC ask
@@ -63,6 +64,8 @@ withConn mx = getConn >>= DBC . lift . mx
 
 executeDB :: ToRow q => Query -> q -> DBC conf ()
 executeDB qry args = void $ withConn $ \conn -> execute conn qry args
+executeDBres :: ToRow q => Query -> q -> DBC conf Integer
+executeDBres qry args = fmap toInteger $ withConn $ \conn -> execute conn qry args
 
 executeManyDB :: ToRow q => Query -> [q] -> DBC conf ()
 executeManyDB qry args = void $ withConn $ \conn -> executeMany conn qry args

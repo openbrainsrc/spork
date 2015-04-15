@@ -3,6 +3,10 @@ module Spork.Time where
 import Data.Time
 import Data.Time.Calendar.WeekDate
 
+import Spork.Database
+
+import GHC.Conc
+
 --using seconds as jitter. sub-second reolution not available from instgram
 toDayOfWeek :: UTCTime -> Double
 toDayOfWeek tm =
@@ -18,3 +22,6 @@ hoursAfterY2K :: UTCTime -> Int
 hoursAfterY2K tm = round difft where
   y2k = UTCTime (fromGregorian 2000 1 1) 0
   difft = diffUTCTime tm y2k
+
+delaySecs :: Double -> DBC c ()
+delaySecs secs = liftIO $ threadDelay (round $ secs * 1000000)
