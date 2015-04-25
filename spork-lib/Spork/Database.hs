@@ -42,9 +42,13 @@ import           Generics.SOP
 import Data.List (intercalate)
 import Data.String (fromString)
 
+import qualified Data.IntSet as IntSet
+import qualified Data.Set as Set
+
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SOP
 import           Database.PostgreSQL.Simple.FromRow
+import           Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.Transaction
 
 newtype DBC conf a = DBC { unDBC :: ReaderT (Connection, conf) IO a }
@@ -87,13 +91,18 @@ foldDB ::  (ToRow params, FromRow row) =>
            Query -> params -> a -> (a -> row -> IO a) -> DBC conf a
 foldDB qry pars seed f = withConn $ \conn -> fold conn qry pars seed f
 
-
 gfoldDB :: forall a r q c. (ToRow q, FromRow r, Generic r, HasFieldNames r) => Query -> q -> a -> (a -> r -> DBC c a) -> DBC c a
 gfoldDB q1 args seed f = do
   (conn, conf) <- db_ask
   let fullq = "select " <> (fromString $ intercalate "," $ fieldNames $ (Proxy :: Proxy r) ) <> " from " <> q1
       fopts = defaultFoldOptions { transactionMode = TransactionMode ReadCommitted ReadWrite}
   liftIO $ foldWithOptions fopts conn fullq args seed (\acc row -> runDB_io conn conf $ f acc row)
+
+queryIntSetDB :: ToRow params => Query -> params -> DBC conf IntSet.IntSet
+queryIntSetDB q pars = foldDB q pars IntSet.empty $ \iset (Only x) -> return $ IntSet.insert x iset
+
+querySetDB :: (ToRow params, FromField a, Ord a) => Query -> params -> DBC conf (Set.Set a)
+querySetDB q pars = foldDB q pars Set.empty $ \iset (Only x) -> return $ Set.insert x iset
 
 console :: (MonadIO m, Show a) => String -> a -> m ()
 console msg x = liftIO $ do
