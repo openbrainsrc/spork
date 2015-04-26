@@ -10,6 +10,7 @@ module Spork.Database
     withConn,
     Connection,
     executeDB, executeManyDB, executeDB_,executeDBres,
+    queryIntSetDB, querySetDB, queryMultiSetDB,
     queryDB, queryDB_,
     foldDB,
     foldDB_,
@@ -42,6 +43,8 @@ import           Generics.SOP
 import Data.List (intercalate)
 import Data.String (fromString)
 
+import           Data.MultiSet (MultiSet)
+import qualified Data.MultiSet as MS
 import qualified Data.IntSet as IntSet
 import qualified Data.Set as Set
 
@@ -103,6 +106,10 @@ queryIntSetDB q pars = foldDB q pars IntSet.empty $ \iset (Only x) -> return $ I
 
 querySetDB :: (ToRow params, FromField a, Ord a) => Query -> params -> DBC conf (Set.Set a)
 querySetDB q pars = foldDB q pars Set.empty $ \iset (Only x) -> return $ Set.insert x iset
+
+queryMultiSetDB ::  (ToRow params, FromField b, Ord a) => Query -> params -> (b -> a) -> DBC conf (MultiSet a)
+queryMultiSetDB q pars f = foldDB q pars MS.empty $ \mset (Only x) -> return $ MS.insert (f x) mset
+
 
 console :: (MonadIO m, Show a) => String -> a -> m ()
 console msg x = liftIO $ do
