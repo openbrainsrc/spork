@@ -11,7 +11,7 @@ module Spork.Database
     Connection,
     executeDB, executeManyDB, executeDB_,executeDBres,
     queryIntSetDB, querySetDB, queryMultiSetDB,
-    queryDB, queryDB_,
+    queryDB, queryDB_,queryListDB,
     foldDB,
     foldDB_,
     gfoldDB,
@@ -109,6 +109,9 @@ querySetDB q pars = foldDB q pars Set.empty $ \iset (Only x) -> return $ Set.ins
 
 queryMultiSetDB ::  (ToRow params, FromField b, Ord a) => Query -> params -> (b -> a) -> DBC conf (MultiSet a)
 queryMultiSetDB q pars f = foldDB q pars MS.empty $ \mset (Only x) -> return $ MS.insert (f x) mset
+
+queryListDB :: (ToRow params, FromField a, Ord a) => Query -> params -> DBC conf [a]
+queryListDB q pars = foldDB q pars [] $ \xs (Only x) -> return $ x:xs
 
 
 console :: (MonadIO m, Show a) => String -> a -> m ()
