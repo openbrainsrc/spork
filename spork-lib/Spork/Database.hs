@@ -27,13 +27,15 @@ module Spork.Database
     gselectFromDB,
     ginsertIntoDB,
     ginsertManyIntoDB,
-    catchDB
+    catchDB,
+    unsafeInterleaveDB
   ) where
 
 import           Control.Applicative
 import           Control.Monad
 import           Control.Monad.Reader
 import           System.IO
+import           System.IO.Unsafe
 
 import qualified Data.Binary as B
 import Control.Exception
@@ -168,3 +170,8 @@ gselectFromDB qry pars = withConn $ \conn -> gselectFrom conn qry pars
 ginsertIntoDB tbl val = withConn $ \conn -> ginsertInto conn tbl val
 
 ginsertManyIntoDB tbl val = withConn $ \conn -> ginsertManyInto conn tbl val
+
+unsafeInterleaveDB :: DBC conf a -> DBC conf a
+unsafeInterleaveDB mx = do
+  (conn, conf) <- db_ask
+  liftIO $ unsafeInterleaveIO $ runDB_io conn conf mx
