@@ -28,6 +28,7 @@ module Spork.Database
     ginsertIntoDB,
     ginsertManyIntoDB,
     catchDB,
+    catchDB_,
     unsafeInterleaveDB,
     memoDB
   ) where
@@ -142,6 +143,11 @@ catchDB f = do
   (conn, conf) <- db_ask
   liftIO $ catch (fmap Right $ runDB_io conn conf f)
                  (\e-> return $ Left $ show (e::SomeException))
+catchDB_ :: DBC conf () -> DBC conf ()
+catchDB_ f = do
+  (conn, conf) <- db_ask
+  liftIO $ catch (void $ runDB_io conn conf f)
+                 (\e-> console "catchDB_error" $ show (e::SomeException))
 
 unOnly :: Only a -> a
 unOnly (Only x) = x
