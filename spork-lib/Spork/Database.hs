@@ -28,7 +28,8 @@ module Spork.Database
     ginsertIntoDB,
     ginsertManyIntoDB,
     catchDB,
-    unsafeInterleaveDB
+    unsafeInterleaveDB,
+    memoDB
   ) where
 
 import           Control.Applicative
@@ -45,6 +46,8 @@ import           Generics.SOP
 import Data.List (intercalate)
 import Data.String (fromString)
 
+import Data.IORef
+
 import           Data.MultiSet (MultiSet)
 import qualified Data.MultiSet as MS
 import qualified Data.IntSet as IntSet
@@ -55,6 +58,7 @@ import           Database.PostgreSQL.Simple.SOP
 import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.Transaction
+import Control.Concurrent.MVar
 
 newtype DBC conf a = DBC { unDBC :: ReaderT (Connection, conf) IO a }
   deriving (Monad, Functor, MonadIO, Applicative)
@@ -175,3 +179,27 @@ unsafeInterleaveDB :: DBC conf a -> DBC conf a
 unsafeInterleaveDB mx = do
   (conn, conf) <- db_ask
   liftIO $ unsafeInterleaveIO $ runDB_io conn conf mx
+  
+--https://hackage.haskell.org/package/io-memoize-1.0.0.0/docs/src/System-IO-Memoize.html
+
+memoDB :: DBC conf  a -> DBC conf  (DBC conf  a)
+memoDB action = do
+  memo <- newDBMemoizer
+  return (memo action)
+
+newDBMemoizer :: DBC conf (DBC conf a -> DBC conf a)
+newDBMemoizer = do
+  b <- liftIO $ newMVar True
+  r <- liftIO $ newIORef undefined
+  return (dbMemoizer b r)
+
+dbMemoizer :: MVar Bool -> IORef a -> DBC conf a -> DBC conf a
+dbMemoizer b r action = do
+  (conn, conf) <- db_ask
+  liftIO $ modifyMVar_ b $ \isEmpty ->
+      if isEmpty
+        then do v <- runDB_io conn conf action
+                writeIORef r v
+                return False
+        else return False
+  liftIO $ readIORef r
