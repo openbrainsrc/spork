@@ -16,7 +16,7 @@ import Network.Wai
 import Network.Wai.Middleware.Static
 import qualified Network.Wai.Middleware.RequestLogger
 
-import Web.Spock
+import Web.Spock.Simple
 
 
 staticMiddleware :: Maybe Policy -> [FilePath] -> Middleware

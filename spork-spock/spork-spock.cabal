@@ -26,4 +26,6 @@ library
                      , wai-middleware-static
                      , wai-extra
                      , wai
+                     , text
+                     , blaze-html
                      , http-types

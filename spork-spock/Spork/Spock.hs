@@ -1,12 +1,15 @@
 module Spork.Spock where
 
-import Web.Spock
+import Web.Spock.Simple
 
 import Spork.DatabaseConfig
 import Spork.Database
 
 import Database.PostgreSQL.Simple (Connection)
 import           Control.Monad.Reader
+import Text.Blaze.Html.Renderer.Text
+import Text.Blaze.Html (Html)
+import Data.Text.Lazy (toStrict)
 
 getPool :: DatabaseConfig -> PoolOrConn Connection
 getPool dbconfig=
@@ -16,3 +19,6 @@ getPool dbconfig=
 
 runDBC :: conf -> DBC conf a -> SpockAction Connection sess env a
 runDBC conf (DBC r) = runQuery $  \conn-> runReaderT r (conn,conf)
+
+blaze :: MonadIO m => Html -> ActionT m a
+blaze = html . toStrict . renderHtml 
