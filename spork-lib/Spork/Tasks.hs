@@ -27,6 +27,7 @@ taskRunner subcmds = do
       conn <- createConn dbconf
       allconf <- readConfig confnm
       runDB_io conn allconf $ dispatch args dbconf subcmds
+      destroyConn conn
 
 dispatch ("psql":rest) dbconf subcmds = do
   let cmd = "PGPASSWORD="++password dbconf ++" psql -U "++user dbconf ++" "++dbname dbconf
@@ -39,7 +40,7 @@ dispatch (subcmd:rest) dbconf subcmds = case lookup subcmd subcmds of
    Nothing -> help subcmds
 
 dispatch [] dbconf subcmds
-  = help subcmds 
+  = help subcmds
 
 help subcmds = liftIO $ do
   putStrLn $ "Avaliable commands: "
