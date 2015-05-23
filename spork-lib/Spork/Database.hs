@@ -109,16 +109,17 @@ gfoldDB q1 args seed f = do
   liftIO $ foldWithOptions fopts conn fullq args seed (\acc row -> runDB_io conn conf $ f acc row)
 
 queryIntSetDB :: ToRow params => Query -> params -> DBC conf IntSet.IntSet
-queryIntSetDB q pars = foldDB q pars IntSet.empty $ \iset (Only x) -> return $ IntSet.insert x iset
+queryIntSetDB q pars = foldDB q pars IntSet.empty $ \(iset) (Only x) -> return $! x `seq` iset `seq` IntSet.insert x iset
 
 querySetDB :: (ToRow params, FromField a, Ord a) => Query -> params -> DBC conf (Set.Set a)
-querySetDB q pars = foldDB q pars Set.empty $ \iset (Only x) -> return $ Set.insert x iset
+querySetDB q pars = foldDB q pars Set.empty $ \iset (Only x) -> return $! x `seq` iset `seq` Set.insert x iset
 
 queryMultiSetDB ::  (ToRow params, FromField b, Ord a) => Query -> params -> (b -> a) -> DBC conf (MultiSet a)
-queryMultiSetDB q pars f = foldDB q pars MS.empty $ \mset (Only x) -> return $ MS.insert (f x) mset
+queryMultiSetDB q pars f = foldDB q pars MS.empty $ \mset (Only x) -> let y = f x
+                                                                      in return $! y `seq` MS.insert y mset
 
 queryListDB :: (ToRow params, FromField a, Ord a) => Query -> params -> DBC conf [a]
-queryListDB q pars = foldDB q pars [] $ \xs (Only x) -> return $ x:xs
+queryListDB q pars = foldDB q pars [] $ \xs (Only x) -> return $! x `seq` (x:xs)
 
 
 console :: (MonadIO m, Show a) => String -> a -> m ()
@@ -185,7 +186,7 @@ unsafeInterleaveDB :: DBC conf a -> DBC conf a
 unsafeInterleaveDB mx = do
   (conn, conf) <- db_ask
   liftIO $ unsafeInterleaveIO $ runDB_io conn conf mx
-  
+
 --https://hackage.haskell.org/package/io-memoize-1.0.0.0/docs/src/System-IO-Memoize.html
 
 memoDB :: DBC conf  a -> DBC conf  (DBC conf  a)
