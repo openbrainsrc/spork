@@ -18,7 +18,7 @@ toDayOfWeekJitter tm =
 toDayOfWeek :: UTCTime -> Int
 toDayOfWeek tm =
   let (_,_,dow) = toWeekDate (utctDay tm)
-  in realToFrac dow 
+  in dow 
 
 toHour :: UTCTime -> Double
 toHour = (/3600) . realToFrac . utctDayTime 
