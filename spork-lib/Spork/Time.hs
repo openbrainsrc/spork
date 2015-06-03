@@ -8,12 +8,17 @@ import Spork.Database
 import GHC.Conc
 
 --using seconds as jitter. sub-second reolution not available from instgram
-toDayOfWeek :: UTCTime -> Double
-toDayOfWeek tm =
+toDayOfWeekJitter :: UTCTime -> Double
+toDayOfWeekJitter tm =
   let (_,_,dow) = toWeekDate (utctDay tm)
       secs = round (utctDayTime tm) `mod` 60
       secFrac = realToFrac (secs::Int) / 60 
   in realToFrac dow + secFrac * 0.70 - 0.35 
+
+toDayOfWeek :: UTCTime -> Int
+toDayOfWeek tm =
+  let (_,_,dow) = toWeekDate (utctDay tm)
+  in realToFrac dow 
 
 toHour :: UTCTime -> Double
 toHour = (/3600) . realToFrac . utctDayTime 
