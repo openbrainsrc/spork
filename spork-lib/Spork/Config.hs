@@ -31,3 +31,4 @@ dbFromArgs f = do
   conn <- createConn dbconf
   allconf <- readConfig confnm
   runDB_io conn allconf $ f args
+  destroyConn conn
