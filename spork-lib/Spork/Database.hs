@@ -30,7 +30,8 @@ module Spork.Database
     catchDB,
     catchDB_,
     unsafeInterleaveDB,
-    memoDB
+    memoDB,
+    withTransactionDB
   ) where
 
 import           Control.Applicative
@@ -149,6 +150,12 @@ catchDB_ f = do
   (conn, conf) <- db_ask
   liftIO $ catch (void $ runDB_io conn conf f)
                  (\e-> console "catchDB_error" $ show (e::SomeException))
+
+withTransactionDB :: DBC c a -> DBC c a
+withTransactionDB dbx = do
+  (conn, conf) <- db_ask
+  liftIO $ withTransaction conn $ runDB_io conn conf dbx
+
 
 unOnly :: Only a -> a
 unOnly (Only x) = x
