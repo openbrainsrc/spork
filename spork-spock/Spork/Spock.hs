@@ -13,7 +13,9 @@ import Data.Text.Lazy (toStrict)
 
 getPool :: DatabaseConfig -> PoolOrConn Connection
 getPool dbconfig=
- let poolCfg    = PoolCfg 2 10 $ 24*60*60
+ let poolCfg    = PoolCfg (maybe 2 id $ num_stripes dbconfig)
+                          (maybe 20 id $ res_per_stripe dbconfig)
+                          $ 24*60*60
      pool       = PCConn $ ConnBuilder (createConn dbconfig) destroyConn poolCfg
  in pool
 

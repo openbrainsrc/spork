@@ -26,6 +26,8 @@ data DatabaseConfig = DatabaseConfig
   , port                   :: Integer
   , dbname                 :: String
   , migrations_directory   :: Maybe String
+  , num_stripes            :: Maybe Int
+  , res_per_stripe         :: Maybe Int
   } deriving (Show, Eq, Generic, Data,Typeable)
 
 instance FromJSON DatabaseConfig
