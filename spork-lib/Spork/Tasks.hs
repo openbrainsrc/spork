@@ -15,19 +15,27 @@ import           System.Process
 import           Spork.Database
 import           Spork.Config
 import           Spork.DatabaseConfig
+import  System.Posix.Syslog
+import Control.Exception
+
 
 
 taskRunner :: FromJSON c => [(String, [String] -> DBC c ())] -> IO ()
 taskRunner subcmds = do
+  progName <- getProgName
   allargs <- getArgs
-  case allargs of
-    [] -> liftIO $ putStrLn "first argument should be a JSON config file"
-    (confnm:args) -> do
-      OnlyDatabaseConfig dbconf <- readConfig confnm
-      conn <- createConn dbconf
-      allconf <- readConfig confnm
-      runDB_io conn allconf $ dispatch args dbconf subcmds
-      destroyConn conn
+  withSyslog progName [] LOCAL3 (logUpTo Debug) $ do
+    case allargs of
+      [] -> liftIO $ putStrLn "first argument should be a JSON config file"
+      (confnm:args) -> do
+        catch ( do OnlyDatabaseConfig dbconf <- readConfig confnm
+                   conn <- createConn dbconf
+                   allconf <- readConfig confnm
+                   runDB_io conn allconf $ dispatch args dbconf subcmds
+                   destroyConn conn )
+              (\e -> do syslog System.Posix.Syslog.Error (show (e::SomeException))
+                        hPutStrLn stderr $ show (e::SomeException)
+                        exitWith $ ExitFailure 1 )
 
 dispatch ("psql":rest) dbconf subcmds = do
   let cmd = "PGPASSWORD="++password dbconf ++" psql -U "++user dbconf ++" "++dbname dbconf

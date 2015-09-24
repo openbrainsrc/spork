@@ -62,6 +62,9 @@ import           Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.Transaction
 import Control.Concurrent.MVar
 
+import  System.Posix.Syslog
+
+
 newtype DBC conf a = DBC { unDBC :: ReaderT (Connection, conf) IO a }
   deriving (Monad, Functor, MonadIO, Applicative)
 
@@ -122,6 +125,25 @@ queryMultiSetDB q pars f = foldDB q pars MS.empty $ \mset (Only x) -> let y = f 
 queryListDB :: (ToRow params, FromField a, Ord a) => Query -> params -> DBC conf [a]
 queryListDB q pars = foldDB q pars [] $ \xs (Only x) -> return $! x `seq` (x:xs)
 
+logAlert :: MonadIO m => String -> m ()
+logAlert s = liftIO $ do
+  syslog System.Posix.Syslog.Alert s
+
+logError :: MonadIO m => String -> m ()
+logError s = liftIO $ do
+  syslog System.Posix.Syslog.Error s
+
+logWarning :: MonadIO m => String -> m ()
+logWarning s = liftIO $ do
+  syslog System.Posix.Syslog.Warning s
+
+logNotice :: MonadIO m => String -> m ()
+logNotice s = liftIO $ do
+  syslog System.Posix.Syslog.Notice s
+
+logInfo :: MonadIO m => String -> m ()
+logInfo s = liftIO $ do
+  syslog System.Posix.Syslog.Notice s
 
 console :: (MonadIO m, Show a) => String -> a -> m ()
 console msg x = liftIO $ do
@@ -144,12 +166,14 @@ catchDB :: DBC conf a -> DBC conf (Either String a)
 catchDB f = do
   (conn, conf) <- db_ask
   liftIO $ catch (fmap Right $ runDB_io conn conf f)
-                 (\e-> return $ Left $ show (e::SomeException))
+                 (\e-> do logWarning $ show (e::SomeException)
+                          return $ Left $ show (e::SomeException))
 catchDB_ :: DBC conf () -> DBC conf ()
 catchDB_ f = do
   (conn, conf) <- db_ask
   liftIO $ catch (void $ runDB_io conn conf f)
-                 (\e-> console "catchDB_error" $ show (e::SomeException))
+                 (\e-> do logWarning $ show (e::SomeException)
+                          console "catchDB_error" $ show (e::SomeException))
 
 withTransactionDB :: DBC c a -> DBC c a
 withTransactionDB dbx = do

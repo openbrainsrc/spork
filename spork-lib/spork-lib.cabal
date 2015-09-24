@@ -42,3 +42,4 @@ library
                      , syb
                      , stm
                      , process
+                     , hsyslog
