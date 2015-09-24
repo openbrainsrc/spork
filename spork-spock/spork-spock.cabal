@@ -28,4 +28,8 @@ library
                      , wai
                      , text
                      , blaze-html
+                     , hsyslog
+                     , data-default
                      , http-types
+                     , bytestring
+                     , fast-logger

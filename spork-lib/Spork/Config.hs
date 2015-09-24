@@ -14,6 +14,8 @@ import           System.Environment
 
 import           Spork.Database
 import           Spork.DatabaseConfig
+import System.Posix.Syslog
+
 
 readConfig :: FromJSON a => FilePath -> IO a
 readConfig path = do
@@ -26,9 +28,11 @@ readConfig path = do
 
 dbFromArgs :: FromJSON conf => ([String]-> DBC conf ()) -> IO ()
 dbFromArgs f = do
-  (confnm:args) <- getArgs
-  OnlyDatabaseConfig dbconf <- readConfig confnm
-  conn <- createConn dbconf
-  allconf <- readConfig confnm
-  runDB_io conn allconf $ f args
-  destroyConn conn
+  progName <- getProgName
+  withSyslog progName [] LOCAL3 (logUpTo Debug) $ do
+    (confnm:args) <- getArgs
+    OnlyDatabaseConfig dbconf <- readConfig confnm
+    conn <- createConn dbconf
+    allconf <- readConfig confnm
+    runDB_io conn allconf $ f args
+    destroyConn conn

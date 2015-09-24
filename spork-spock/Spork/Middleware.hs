@@ -4,6 +4,7 @@ module Spork.Middleware (
   corsMiddleware
   , setCorsHeaders
   , staticMiddleware
+  , syslogLogger
   , Network.Wai.Middleware.RequestLogger.logStdout
   ) where
 
@@ -14,9 +15,22 @@ import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status
 import Network.Wai
 import Network.Wai.Middleware.Static
-import qualified Network.Wai.Middleware.RequestLogger
+import Network.Wai.Middleware.RequestLogger
 
 import Web.Spock.Simple
+import System.Posix.Syslog
+import Data.Default
+import Control.Monad.Trans
+
+import qualified Data.ByteString as BS
+import Data.Text.Encoding (decodeUtf8)
+import qualified Data.Text as T
+import System.Log.FastLogger
+
+
+syslogLogger :: MonadIO m => m Middleware
+syslogLogger = liftIO $ mkRequestLogger def { destination = Callback syslogit }
+  where syslogit logstr = syslog System.Posix.Syslog.Info $ T.unpack $ decodeUtf8 $ fromLogStr logstr
 
 
 staticMiddleware :: Maybe Policy -> [FilePath] -> Middleware
