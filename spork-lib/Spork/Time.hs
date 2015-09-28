@@ -12,21 +12,25 @@ toDayOfWeekJitter :: UTCTime -> Double
 toDayOfWeekJitter tm =
   let (_,_,dow) = toWeekDate (utctDay tm)
       secs = round (utctDayTime tm) `mod` 60
-      secFrac = realToFrac (secs::Int) / 60 
-  in realToFrac dow + secFrac * 0.70 - 0.35 
+      secFrac = realToFrac (secs::Int) / 60
+  in realToFrac dow + secFrac * 0.70 - 0.35
 
 toDayOfWeek :: UTCTime -> Int
 toDayOfWeek tm =
   let (_,_,dow) = toWeekDate (utctDay tm)
-  in dow 
+  in dow
 
 toHour :: UTCTime -> Double
-toHour = (/3600) . realToFrac . utctDayTime 
+toHour = (/3600) . realToFrac . utctDayTime
 
-hoursAfterY2K :: UTCTime -> Int
-hoursAfterY2K tm = round difft where
+secondsAfterY2K :: UTCTime -> Int
+secondsAfterY2K tm = round difft where
   y2k = UTCTime (fromGregorian 2000 1 1) 0
   difft = diffUTCTime tm y2k
+
+secondsAfterY2KtoUTC :: Int -> UTCTime
+secondsAfterY2KtoUTC secs = addUTCTime (realToFrac secs) $ UTCTime (fromGregorian 2000 1 1) 0
+
 
 delaySecs :: Double -> DBC c ()
 delaySecs secs = liftIO $ threadDelay (round $ secs * 1000000)
