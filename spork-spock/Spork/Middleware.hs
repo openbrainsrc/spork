@@ -67,4 +67,9 @@ mkCorsHeaders url =
       allowMethods = ( fromString "Access-Control-Allow-Methods"
                      , fromString "GET, POST, PUT, OPTIONS, DELETE"
                      )
-  in [allowOrigin, allowHeaders, allowMethods]
+      allowCredentials = ( fromString "Access-Control-Allow-Credentials"
+                          , fromString "true"
+                         )
+
+
+  in [allowOrigin, allowHeaders, allowMethods, allowCredentials]
