@@ -62,7 +62,7 @@ mkCorsHeaders url =
                      , fromString $ url
                      )
       allowHeaders = ( fromString "Access-Control-Allow-Headers"
-                     , fromString "Origin, X-Requested-With, Content-Type, Accept"
+                     , fromString "Origin, X-Requested-With, Content-Type, Accept, Authorization"
                      )
       allowMethods = ( fromString "Access-Control-Allow-Methods"
                      , fromString "GET, POST, PUT, OPTIONS, DELETE"
