@@ -22,7 +22,7 @@ import System.Posix.Syslog
 import Data.Default
 import Control.Monad.Trans
 
-import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BS8
 import Data.Text.Encoding (decodeUtf8)
 import qualified Data.Text as T
 import System.Log.FastLogger
@@ -50,16 +50,37 @@ type URL = String
 corsMiddleware :: URL -> Application -> Request -> (Response -> IO ResponseReceived) -> IO ResponseReceived
 corsMiddleware url app req k =
   if requestMethod req == methodOptions
-    then k $ responseLBS status200 (mkCorsHeaders url) ""
+    then k $ responseLBS status200 (mkCorsHeaders req) ""
     else app req k
 
-setCorsHeaders :: URL -> SpockAction a b c ()
+setCorsHeaders :: Request -> SpockAction a b c ()
 setCorsHeaders = mapM_ (uncurry setHeader) . mkCorsHeaders
 
-mkCorsHeaders :: (IsString a, IsString b) => URL -> [(a, b)]
-mkCorsHeaders url =
+type Origin = BS8.ByteString
+
+-- TODO pass this from config and check against it
+allowedOrigins :: [Origin]
+allowedOrigins = [ "http://???" ]
+
+-- https://www.w3.org/TR/cors/#access-control-allow-origin-response-header
+allOrigins :: Origin
+allOrigins = "*" -- does not works with cors requests with credentials
+
+nullOrigin :: Origin
+nullOrigin = "null"
+
+refToOrigin ::  Maybe BS8.ByteString -> Origin
+refToOrigin Nothing = nullOrigin
+refToOrigin (Just ref) = origin
+  where
+    chunks = BS8.split '/' ref -- http://tools.ietf.org/html/rfc6454#section-7.1
+    origin = if length chunks >= 3 then BS8.intercalate "/" (take 3 chunks)
+                                   else nullOrigin
+
+mkCorsHeaders :: (IsString a, IsString b) => Request -> [(a, b)]
+mkCorsHeaders req =
   let allowOrigin  = ( fromString "Access-Control-Allow-Origin"
-                     , fromString $ url
+                     , fromString . BS8.unpack . refToOrigin . requestHeaderReferer $ req
                      )
       allowHeaders = ( fromString "Access-Control-Allow-Headers"
                      , fromString "Origin, X-Requested-With, Content-Type, Accept, Authorization"
@@ -68,7 +89,7 @@ mkCorsHeaders url =
                      , fromString "GET, POST, PUT, OPTIONS, DELETE"
                      )
       allowCredentials = ( fromString "Access-Control-Allow-Credentials"
-                          , fromString "true"
+                         , fromString "true"
                          )
 
 

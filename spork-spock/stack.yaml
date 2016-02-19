@@ -1,0 +1,27 @@
+resolver: nightly-2015-12-14
+
+packages:
+- '.'
+- '../spork-lib'
+- location:
+    git: git@github.com:yesodweb/wai.git
+    commit: 3f4ca5838192e7f64a82954caa48c2e815897352
+  subdirs:
+    - wai
+    - wai-extra
+    - warp
+    - auto-update
+
+- location:
+    git: git@github.com:kazu-yamamoto/http2.git        # v1.4.5, needed for warp
+    commit: 6922317d55a786a58d17b87da997cdb2a11691fc
+
+# - '../spork-migrate'
+
+extra-deps:
+  - postgresql-simple-sop-0.2
+
+flags: {}
+
+
+extra-package-dbs: []
