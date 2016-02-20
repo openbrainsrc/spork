@@ -8,6 +8,7 @@ module Spork.Middleware (
   , Network.Wai.Middleware.RequestLogger.logStdout
   ) where
 
+import Data.List (elemIndex)
 import Data.Monoid
 import Data.String
 
@@ -69,18 +70,23 @@ allOrigins = "*" -- does not works with cors requests with credentials
 nullOrigin :: Origin
 nullOrigin = "null"
 
-refToOrigin ::  Maybe BS8.ByteString -> Origin
-refToOrigin Nothing = nullOrigin
-refToOrigin (Just ref) = origin
+reqToOrigin :: Request -> Origin
+reqToOrigin req = origin
   where
-    chunks = BS8.split '/' ref -- http://tools.ietf.org/html/rfc6454#section-7.1
-    origin = if length chunks >= 3 then BS8.intercalate "/" (take 3 chunks)
-                                   else nullOrigin
+    hdrOrigin = lookup "origin" (requestHeaders req)
+    origin = case hdrOrigin of
+      Nothing -> nullOrigin
+      Just x  -> x
+
+checkOrigin :: Origin -> Origin
+checkOrigin o = case elemIndex o allowedOrigins of
+  Just _  -> o
+  Nothing -> o -- TODO nullOrigin
 
 mkCorsHeaders :: (IsString a, IsString b) => Request -> [(a, b)]
 mkCorsHeaders req =
   let allowOrigin  = ( fromString "Access-Control-Allow-Origin"
-                     , fromString . BS8.unpack . refToOrigin . requestHeaderReferer $ req
+                     , fromString . BS8.unpack . checkOrigin . reqToOrigin $ req
                      )
       allowHeaders = ( fromString "Access-Control-Allow-Headers"
                      , fromString "Origin, X-Requested-With, Content-Type, Accept, Authorization"
