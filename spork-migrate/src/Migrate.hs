@@ -37,7 +37,7 @@ runMigrations = do
   let toMigrate = sortBy (\(a,_) (b,_) -> compare a b)
                 . filter ((".sql" `isSuffixOf`) . snd)
                 . filter ((`notElem` alreadyMigratedNames) . fst)
-                . map (\n -> (takeWhile (`elem` "0123456789") n
+                . map (\n -> (takeWhile (`elem` ("0123456789" :: String)) n
                              , migrationsPath </> n))
                 $ fileNames
 
