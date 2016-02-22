@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 
 import Control.Monad
 
@@ -62,7 +63,11 @@ createMigrationFile name = do
   OnlyDatabaseConfig conf <- getConf
   let migrationsDir = maybe "migrations" id $ migrations_directory conf
   now <- liftIO getCurrentTime
-  let prefix   = formatTime defaultTimeLocale "%Y%m%d%H%M%S" now
+#if MIN_VERSION_time(1,5,0) 
+  let prefix = formatTime Data.Time.defaultTimeLocale "%Y%m%d%H%M%S" now
+#else
+  let prefix = formatTime System.Locale.defaultTimeLocale "%Y%m%d%H%M%S" now
+#endif
       fullname = prefix ++ "_" ++ name <.> "sql"
       path     = migrationsDir </> fullname
   liftIO $ writeFile path "-- Enter the SQL queries to execute here.\n"
