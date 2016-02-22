@@ -54,8 +54,8 @@ corsMiddleware url app req k =
     then k $ responseLBS status200 (mkCorsHeaders req) ""
     else app req k
 
-setCorsHeaders :: Request -> SpockAction a b c ()
-setCorsHeaders = mapM_ (uncurry setHeader) . mkCorsHeaders
+setCorsHeaders :: SpockAction a b c ()
+setCorsHeaders = request >>= (mapM_ (uncurry setHeader) . mkCorsHeaders)
 
 type Origin = BS8.ByteString
 
