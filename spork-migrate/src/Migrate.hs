@@ -37,7 +37,7 @@ runMigrations = do
   let toMigrate = sortBy (\(a,_) (b,_) -> compare a b)
                 . filter ((".sql" `isSuffixOf`) . snd)
                 . filter ((`notElem` alreadyMigratedNames) . fst)
-                . map (\n -> (takeWhile (`elem` ("0123456789" :: String)) n
+                . map (\n -> (takeWhile (`elem` "0123456789") n
                              , migrationsPath </> n))
                 $ fileNames
 
@@ -62,7 +62,7 @@ createMigrationFile name = do
   OnlyDatabaseConfig conf <- getConf
   let migrationsDir = maybe "migrations" id $ migrations_directory conf
   now <- liftIO getCurrentTime
-  let prefix   = formatTime Data.Time.defaultTimeLocale "%Y%m%d%H%M%S" now
+  let prefix   = formatTime defaultTimeLocale "%Y%m%d%H%M%S" now
       fullname = prefix ++ "_" ++ name <.> "sql"
       path     = migrationsDir </> fullname
   liftIO $ writeFile path "-- Enter the SQL queries to execute here.\n"
