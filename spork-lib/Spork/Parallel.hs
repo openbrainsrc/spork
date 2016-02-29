@@ -22,6 +22,9 @@ import Control.Applicative
 import Control.Monad
 import Control.Concurrent.MVar
 
+import qualified System.Posix.Process as SPP
+
+
 import Control.Concurrent.STM.TBQueue
 import qualified GHC.Conc as Conc
 
@@ -105,3 +108,15 @@ boundedWorker nthreads f = do
 
 getCPUs :: DBC c Int
 getCPUs = liftIO Conc.getNumCapabilities
+
+forkProcess :: DatabaseConfig -> DBC conf () -> DBC conf ()
+forkProcess dbConf task = do
+  conf <- getConf
+  _ <- liftIO $ SPP.forkProcess $ do
+    --http://stackoverflow.com/questions/21178581/how-to-prevent-upstart-from-killing-child-processes-to-a-daemon
+    pid <- SPP.getProcessID
+    SPP.setProcessGroupIDOf pid pid
+    newDBconn <- createConn dbConf
+    runDB_io newDBconn conf task
+    exitSuccess
+  return ()
