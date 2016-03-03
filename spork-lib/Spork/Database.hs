@@ -10,7 +10,7 @@ module Spork.Database
     withConn,
     Connection,
     executeDB, executeManyDB, executeDB_,executeDBres,
-    queryIntSetDB, querySetDB, queryMultiSetDB,
+    queryIntSetDB, querySetDB, queryMultiSetDB, queryIntMultiSetDB,
     queryDB, queryDB_,queryListDB,
     foldDB,
     foldDB_,
