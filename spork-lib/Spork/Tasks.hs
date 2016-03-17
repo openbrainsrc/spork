@@ -17,6 +17,7 @@ import           Spork.Config
 import           Spork.DatabaseConfig
 import  System.Posix.Syslog
 import Control.Exception
+import Control.Monad (when)
 
 
 
@@ -29,10 +30,13 @@ taskRunner subcmds = do
       [] -> liftIO $ putStrLn "first argument should be a JSON config file"
       (confnm:args) -> do
         catch ( do OnlyDatabaseConfig dbconf <- readConfig confnm
-                   conn <- createConn dbconf
+                   conn <- if ("--disable-database-connection" `elem` args)
+                             then return undefined
+                             else createConn dbconf
                    allconf <- readConfig confnm
                    runDB_io conn allconf $ dispatch args dbconf subcmds
-                   destroyConn conn )
+                   when (not $ "--disable-database-connection" `elem` args) $
+                     destroyConn conn )
               (\e -> do syslog System.Posix.Syslog.Error (show (e::SomeException))
                         hPutStrLn stderr $ show (e::SomeException)
                         exitWith $ ExitFailure 1 )
