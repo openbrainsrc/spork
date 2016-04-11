@@ -49,11 +49,8 @@ staticMiddleware mPolicy dirs =
 
 type URL = String
 
-corsMiddleware :: URL -> Application -> Request -> (Response -> IO ResponseReceived) -> IO ResponseReceived
-corsMiddleware url app req k =
-  if requestMethod req == methodOptions
-    then k $ responseLBS status200 (mkCorsHeaders req) ""
-    else app req k
+corsMiddleware :: Middleware
+corsMiddleware app req respond = app req $ respond . mapResponseHeaders (++(mkCorsHeaders req))
 
 setCorsHeaders :: SpockAction a b c ()
 setCorsHeaders = request >>= (mapM_ (uncurry setHeader) . mkCorsHeaders)

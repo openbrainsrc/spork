@@ -10,7 +10,7 @@ module Spork.Database
     withConn,
     Connection,
     executeDB, executeManyDB, executeDB_,executeDBres,
-    queryIntSetDB, querySetDB, queryMultiSetDB,
+    queryIntSetDB, querySetDB, queryMultiSetDB, queryIntMultiSetDB,
     queryDB, queryDB_,queryListDB,
     foldDB,
     foldDB_,
@@ -49,6 +49,9 @@ import Data.List (intercalate)
 import Data.String (fromString)
 
 import Data.IORef
+
+import           Data.IntMultiSet (IntMultiSet)
+import qualified Data.IntMultiSet as IntMultiSet
 
 import           Data.MultiSet (MultiSet)
 import qualified Data.MultiSet as MS
@@ -121,6 +124,10 @@ querySetDB q pars = foldDB q pars Set.empty $ \iset (Only x) -> return $! x `seq
 queryMultiSetDB ::  (ToRow params, FromField b, Ord a) => Query -> params -> (b -> a) -> DBC conf (MultiSet a)
 queryMultiSetDB q pars f = foldDB q pars MS.empty $ \mset (Only x) -> let y = f x
                                                                       in return $! y `seq` MS.insert y mset
+
+queryIntMultiSetDB ::  (ToRow params) => Query -> params -> DBC conf IntMultiSet
+queryIntMultiSetDB q pars
+  = foldDB q pars IntMultiSet.empty $ \mset (Only x) -> return $! x `seq` IntMultiSet.insert x mset
 
 queryListDB :: (ToRow params, FromField a, Ord a) => Query -> params -> DBC conf [a]
 queryListDB q pars = foldDB q pars [] $ \xs (Only x) -> return $! x `seq` (x:xs)
