@@ -6,6 +6,7 @@ module Spork.Middleware (
   , staticMiddleware
   , syslogLogger
   , Network.Wai.Middleware.RequestLogger.logStdout
+  , Network.Wai.Middleware.RequestLogger.logStdoutDev
   ) where
 
 import Data.List (elemIndex)
