@@ -43,6 +43,7 @@ runMigrations = do
                 $ fileNames
 
   forM_ toMigrate $ \(n,p) -> do
+    liftIO $ putStrLn $ "Running migration: "++p
     content <- liftIO $ readFile p
     let qStr = content ++ "; INSERT INTO migrations ( name ) VALUES ('"
                        ++ n ++ "')"
@@ -63,7 +64,7 @@ createMigrationFile name = do
   OnlyDatabaseConfig conf <- getConf
   let migrationsDir = maybe "migrations" id $ migrations_directory conf
   now <- liftIO getCurrentTime
-#if MIN_VERSION_time(1,5,0) 
+#if MIN_VERSION_time(1,5,0)
   let prefix = formatTime Data.Time.defaultTimeLocale "%Y%m%d%H%M%S" now
 #else
   let prefix = formatTime System.Locale.defaultTimeLocale "%Y%m%d%H%M%S" now
