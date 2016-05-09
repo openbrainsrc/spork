@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, DeriveGeneric, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, DeriveGeneric, GeneralizedNewtypeDeriving, FlexibleContexts #-}
 
 module Spork.Database
   ( readField,
@@ -31,7 +31,13 @@ module Spork.Database
     catchDB_,
     unsafeInterleaveDB,
     memoDB,
-    withTransactionDB
+    withTransactionDB,
+    gselectDB,
+    ginsertDB,
+    gupdateDB,
+    gupsertDB,
+    gfastInsertDB,
+    getByKeyDB
   ) where
 
 import           Control.Applicative
@@ -216,9 +222,23 @@ mBinaryField = do
 
 gselectFromDB qry pars = withConn $ \conn -> gselectFrom conn qry pars
 
+gselectDB qry pars = withConn $ \conn -> gselect conn qry pars
+
 ginsertIntoDB tbl val = withConn $ \conn -> ginsertInto conn tbl val
 
+ginsertDB val = withConn $ \conn -> ginsert conn val
+
+getByKeyDB k = withConn $ \conn -> getByKey conn k
+
 ginsertManyIntoDB tbl val = withConn $ \conn -> ginsertManyInto conn tbl val
+
+gdeleteDB val = withConn $ \conn -> gdelete conn val
+
+gupdateDB val = withConn $ \conn -> gupdate conn val
+
+gupsertDB val = withConn $ \conn -> gupsert conn val
+
+gfastInsertDB val = withConn $ \conn -> gfastInsert conn val
 
 unsafeInterleaveDB :: DBC conf a -> DBC conf a
 unsafeInterleaveDB mx = do
