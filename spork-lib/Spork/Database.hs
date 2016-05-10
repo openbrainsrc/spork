@@ -37,7 +37,8 @@ module Spork.Database
     gupdateDB,
     gupsertDB,
     gfastInsertDB,
-    getByKeyDB
+    getByKeyDB,
+    ginsertNoKeyDB
   ) where
 
 import           Control.Applicative
@@ -227,6 +228,8 @@ gselectDB qry pars = withConn $ \conn -> gselect conn qry pars
 ginsertIntoDB tbl val = withConn $ \conn -> ginsertInto conn tbl val
 
 ginsertDB val = withConn $ \conn -> ginsert conn val
+
+ginsertNoKeyDB val = withConn $ \conn -> ginsertNoKey conn val
 
 getByKeyDB k = withConn $ \conn -> getByKey conn k
 
