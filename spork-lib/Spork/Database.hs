@@ -36,6 +36,7 @@ module Spork.Database
     ginsertDB,
     gupdateDB,
     gupsertDB,
+    gdeleteDB,
     gfastInsertDB,
     getByKeyDB,
     ginsertNoKeyDB
