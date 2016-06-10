@@ -44,3 +44,4 @@ library
                      , process
                      , hsyslog
                      , unix
+                     , exceptions

@@ -72,12 +72,12 @@ import           Database.PostgreSQL.Simple.FromRow
 import           Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.Transaction
 import Control.Concurrent.MVar
-
+import Control.Monad.Catch (MonadMask, MonadCatch, MonadThrow)
 import  System.Posix.Syslog
 
 
 newtype DBC conf a = DBC { unDBC :: ReaderT (Connection, conf) IO a }
-  deriving (Monad, Functor, MonadIO, Applicative)
+  deriving (Monad, Functor, MonadIO, Applicative, MonadThrow, MonadCatch, MonadMask)
 
 db_ask :: DBC conf (Connection, conf)
 db_ask = DBC ask
