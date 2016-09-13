@@ -19,7 +19,7 @@ import Network.Wai
 import Network.Wai.Middleware.Static
 import Network.Wai.Middleware.RequestLogger
 
-import Web.Spock.Simple
+import Web.Spock.Safe
 import System.Posix.Syslog
 import Data.Default
 import Control.Monad.Trans
