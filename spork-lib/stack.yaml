@@ -1,8 +1,14 @@
+resolver: lts-6.17
+
 packages:
 - '.'
 - location:
     git: git@github.com:openbrainsrc/obutils
-    commit: d9a98461f220423c2d9da356dcc48d4ee0877aa5
+    commit: e3e766b83efc44a8fce631410505ab1664a572f2 
+- location:
+    git: git@github.com:openbrainsrc/postgresql-simple-sop.git
+    commit: eb5ce7037d3044659ff30677af43e5e1ec1f56ce
+
 extra-deps:
 # - carray-0.1.5.2
 - daemons-0.2.1
@@ -35,4 +41,3 @@ extra-deps:
 - gnuplot-0.5.3.1
 - data-accessor-transformers-0.2.1.6
 - mime-0.3.4
-resolver: lts-2.22

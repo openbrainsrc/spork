@@ -1,20 +1,22 @@
 module Spork.Spock where
 
-import Web.Spock.Simple
+import           Web.Spock.Shared
 
-import Spork.DatabaseConfig
-import Spork.Database
+import           Data.Maybe (fromMaybe)
 
-import Database.PostgreSQL.Simple (Connection)
+import           Spork.DatabaseConfig
+import           Spork.Database
+
+import           Database.PostgreSQL.Simple (Connection)
 import           Control.Monad.Reader
-import Text.Blaze.Html.Renderer.Text
-import Text.Blaze.Html (Html)
-import Data.Text.Lazy (toStrict)
+import           Text.Blaze.Html.Renderer.Text
+import           Text.Blaze.Html (Html)
+import           Data.Text.Lazy (toStrict)
 
 getPool :: DatabaseConfig -> PoolOrConn Connection
 getPool dbconfig=
- let poolCfg    = PoolCfg (maybe 2 id $ num_stripes dbconfig)
-                          (maybe 20 id $ res_per_stripe dbconfig)
+ let poolCfg    = PoolCfg (fromMaybe 2 $ num_stripes dbconfig)
+                          (fromMaybe 20 $ res_per_stripe dbconfig)
                           $ 24*60*60
      pool       = PCConn $ ConnBuilder (createConn dbconfig) destroyConn poolCfg
  in pool

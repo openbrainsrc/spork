@@ -1,11 +1,13 @@
-resolver: nightly-2015-12-14
+resolver: lts-6.17
 
 packages:
 - '.'
 - '../spork-lib'
+- location:
+    git: git@github.com:openbrainsrc/postgresql-simple-sop.git
+    commit: eb5ce7037d3044659ff30677af43e5e1ec1f56ce
 
-extra-deps:
-  - postgresql-simple-sop-0.2
+extra-deps: []
 
 flags: {}
 
