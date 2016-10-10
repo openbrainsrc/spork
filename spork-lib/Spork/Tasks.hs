@@ -25,8 +25,7 @@ taskRunner :: FromJSON c => [(String, [String] -> DBC c ())] -> IO ()
 taskRunner subcmds = do
   progName <- getProgName
   allargs <- getArgs
-  withSyslog progName [] LOCAL3 (logUpTo Debug) $ do
-    case allargs of
+  case allargs of
       [] -> liftIO $ putStrLn "first argument should be a JSON config file"
       (confnm:args) -> do
         catch ( do OnlyDatabaseConfig dbconf <- readConfig confnm
@@ -37,8 +36,7 @@ taskRunner subcmds = do
                    runDB_io conn allconf $ dispatch args dbconf subcmds
                    when (not $ "--disable-database-connection" `elem` args) $
                      destroyConn conn )
-              (\e -> do syslog System.Posix.Syslog.Error (show (e::SomeException))
-                        hPutStrLn stderr $ show (e::SomeException)
+              (\e -> do hPutStrLn stderr $ show (e::SomeException)
                         exitWith $ ExitFailure 1 )
 
 dispatch ("psql":rest) dbconf subcmds = do
