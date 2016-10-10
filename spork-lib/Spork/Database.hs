@@ -181,13 +181,14 @@ catchDB :: DBC conf a -> DBC conf (Either String a)
 catchDB f = do
   (conn, conf) <- db_ask
   liftIO $ catch (fmap Right $ runDB_io conn conf f)
-                 (\e-> do logWarning $ show (e::SomeException)
+                 (\e-> do --logWarning $ show (e::SomeException)
+                          print (e::SomeException)
                           return $ Left $ show (e::SomeException))
 catchDB_ :: DBC conf () -> DBC conf ()
 catchDB_ f = do
   (conn, conf) <- db_ask
   liftIO $ catch (void $ runDB_io conn conf f)
-                 (\e-> do logWarning $ show (e::SomeException)
+                 (\e-> do print (e::SomeException)
                           console "catchDB_error" $ show (e::SomeException))
 
 withTransactionDB :: DBC c a -> DBC c a
